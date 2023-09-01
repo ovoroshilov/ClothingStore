@@ -1,0 +1,59 @@
+﻿@model ProductViewModel
+
+<form asp-action="CreateProduct" method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="Name">Name</label>
+                <input type="text" id="Name" asp-for="Name" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="ClotheType" class="inline-label">Clothing type</label>
+                <select id="ClotheType" name="ClotheType" class="form-select same-width" asp-for="ClotheType" asp-items="Html.GetEnumSelectList<ClotheType>()"></select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="Price">Price</label>
+                <input type="number" step="any" id="Price" asp-for="Price" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="Description">Description</label>
+                <input type="text" id="Description" asp-for="Description" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label asp-for="ImageFile">Image</label>
+                <input type="file" id="ImageFile" asp-for="ImageFile" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </div>
+</form>
+
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .inline-label {
+        width: 120px;
+    }
+
+    .same-width {
+        width: 100%;
+    }
+</style>
