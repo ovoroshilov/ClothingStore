@@ -8,23 +8,60 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using ClothingStore.Domain.Enums;
 using ClothingStore.Domain.Helpers;
+using System.Reflection.Metadata.Ecma335;
+using ClothingStore.DAL.Interfaces;
 
 namespace ClotherStore.Services.Implementions
 {
     public class AccountService : IAccountService
     {
-        private readonly UserRepository _userRepository;
+        private readonly IBaseRepository<User> _userRepository;
         private readonly ILogger<AccountService> _logger;
 
-        public AccountService(UserRepository userRepository, ILogger<AccountService> logger)
+        public AccountService(IBaseRepository<User> userRepository, ILogger<AccountService> logger)
         {
             _userRepository = userRepository;
             _logger = logger;
         }
 
-        public Task<IBaseResponse<ClaimsIdentity>> LogIn(RegisterViewModel user)
+        public async Task<IBaseResponse<ClaimsIdentity>> LogIn(LoginViewModel login)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login.Login);
+                if (user == null)
+                {
+                    return new BaseResponse<ClaimsIdentity>
+                    {
+                        Description = "User not found",
+                        StatusCode = StatusCode.UserNotFound
+                    };
+                }
+
+                if (user.Password != HashPasswordHelper.HashPassword(login.Password))
+                {
+                    return new BaseResponse<ClaimsIdentity>
+                    {
+                        Description = "Wrong password",
+                    };
+                }
+                var result = Authenticate(user);
+                return new BaseResponse<ClaimsIdentity>
+                {
+                    Description = "Welcome",
+                    StatusCode = StatusCode.Ok,
+                    Data = result
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[LogIn]: {ex.Message}");
+                return new BaseResponse<ClaimsIdentity>
+                {
+                    Description = "Something went wrong",
+                    StatusCode = StatusCode.InternalServerError
+                };
+            }
         }
 
         public async Task<IBaseResponse<ClaimsIdentity>> Register(RegisterViewModel user)
@@ -50,7 +87,9 @@ namespace ClotherStore.Services.Implementions
 
                 return new BaseResponse<ClaimsIdentity>
                 {
-                    Description = "Account has succeflully created"
+                    Data = result,
+                    Description = "Account has succeflully created",
+                    StatusCode = StatusCode.Ok
                 };
             }
             catch (Exception ex)
@@ -58,7 +97,7 @@ namespace ClotherStore.Services.Implementions
                 _logger.LogError(ex, $"[Register]: {ex.Message}");
                 return new BaseResponse<ClaimsIdentity>
                 {
-                    Description = "Account has succeflully created",
+                    Description = "Something went wrong",
                     StatusCode = StatusCode.InternalServerError
                 };
             }
